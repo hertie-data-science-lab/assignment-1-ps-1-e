@@ -32,8 +32,10 @@ class TorchNetwork(nn.Module):
         """
         out1 = self.activation_func(self.linear1(x_train))
         out2 = self.activation_func(self.linear2(out1))
-        out3 = self.linear3(out2)  # raw logits
-        return out3
+        out3 = self.linear3(out2)
+        out_softmax = F.softmax(out3, dim=1)  # probabilities
+        return out_softmax  
+
 
     def _backward_pass(self, y_train, output):
         """
@@ -51,17 +53,30 @@ class TorchNetwork(nn.Module):
 
     def _flatten(self, x):
         return x.view(x.size(0), -1)
+    
+
 
     def _print_learning_progress(self, start_time, iteration, train_loader, val_loader):
         train_accuracy = self.compute_accuracy(train_loader)
         val_accuracy = self.compute_accuracy(val_loader)
         print(
-            f'Epoch: {iteration + 1}, '
-            f'Training Time: {time.time() - start_time:.2f}s, '
-            f'Learning Rate: {self.optimizer.param_groups[0]['lr']}, '
-            f'Training Accuracy: {train_accuracy * 100:.2f}%, '
-            f'Validation Accuracy: {val_accuracy * 100:.2f}%'
+        f"Epoch: {iteration + 1}, "
+        f"Training Time: {time.time() - start_time:.2f}s, "
+        f"Learning Rate: {self.optimizer.param_groups[0]['lr']}, "
+        f"Training Accuracy: {train_accuracy * 100:.2f}%, "
+        f"Validation Accuracy: {val_accuracy * 100:.2f}%"
         )
+
+    def compute_accuracy(self, data_loader):
+        correct = 0
+        total = 0
+        with torch.no_grad():
+                for x, y in data_loader:
+                    x = self._flatten(x)
+                    preds = self.predict(x)  # uses forward pass + argmax
+                    correct += (preds == y).sum().item()
+                    total += y.size(0)
+        return correct / total
 
     def predict(self, x):
         """
@@ -70,7 +85,7 @@ class TorchNetwork(nn.Module):
         x = self._flatten(x)
         with torch.no_grad():
             logits = self._forward_pass(x)
-            preds = torch.argmax(F.softmax(logits, dim=1), dim=1)
+            preds = torch.argmax(F(logits, dim=1), dim=1)
         return preds
 
     def fit(self, train_loader, val_loader):
@@ -93,4 +108,11 @@ class TorchNetwork(nn.Module):
                 epoch_loss += loss
 
             self._print_learning_progress(start_time, iteration, train_loader, val_loader)
+            self.history = {
+                "loss": [],      # training loss per epoch
+                "val_loss": [],  # validation loss per epoch
+                "acc": [],       # training accuracy per epoch
+                "val_acc": []    # validation accuracy per epoch
+            }
+
 
