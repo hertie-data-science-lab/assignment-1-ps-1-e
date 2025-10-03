@@ -11,6 +11,7 @@ class ResNetwork(Network):
         """
         super().__init__(sizes, epochs, learning_rate, random_state)
 
+    #The Residual network skips connections and jumps over activation functions
     def _forward_pass(self, x_train):
         """
         Forward propagation with conditional residual connections.
