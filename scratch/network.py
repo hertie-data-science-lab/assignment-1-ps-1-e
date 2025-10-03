@@ -175,8 +175,7 @@ class Network():
             val_acc   = self.compute_accuracy(x_val, y_val)
 
        
-        self.history["acc"].append(train_acc)
-        self.history["val_acc"].append(val_acc)
-    
-        self._print_learning_progress(start_time, iteration, x_train, y_train, x_val, y_val)
+            self.history["acc"].append(train_acc)
+            self.history["val_acc"].append(val_acc)
+            self._print_learning_progress(start_time, iteration, x_train, y_train, x_val, y_val)
         return self.history

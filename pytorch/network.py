@@ -91,7 +91,6 @@ class TorchNetwork(nn.Module):
         start_time = time.time()
         
         self.history = {
-                "loss": [],      # training loss per epoch
                 "val_loss": [],  # validation loss per epoch
                 "acc": [],       # training accuracy per epoch
                 "val_acc": []    # validation accuracy per epoch
@@ -118,9 +117,9 @@ class TorchNetwork(nn.Module):
             train_acc = self.compute_accuracy(train_loader)
             val_acc   = self.compute_accuracy(val_loader)
 
-            self.history["loss"].append(epoch_loss / len(train_loader))
             self.history["acc"].append(train_acc)
             self.history["val_acc"].append(val_acc)
             self._print_learning_progress(start_time, iteration, train_loader, val_loader)
+        return self.history
 
 
