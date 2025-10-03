@@ -1,5 +1,4 @@
 import time
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -85,11 +84,19 @@ class TorchNetwork(nn.Module):
         x = self._flatten(x)
         with torch.no_grad():
             logits = self._forward_pass(x)
-            preds = torch.argmax(F(logits, dim=1), dim=1)
+            preds = torch.argmax(logits, dim=1)
         return preds
 
     def fit(self, train_loader, val_loader):
         start_time = time.time()
+        
+        self.history = {
+                "loss": [],      # training loss per epoch
+                "val_loss": [],  # validation loss per epoch
+                "acc": [],       # training accuracy per epoch
+                "val_acc": []    # validation accuracy per epoch
+            }
+
 
         for iteration in range(self.epochs):
             epoch_loss = 0
@@ -107,12 +114,13 @@ class TorchNetwork(nn.Module):
 
                 epoch_loss += loss
 
+            # compute metrics after each epoch
+            train_acc = self.compute_accuracy(train_loader)
+            val_acc   = self.compute_accuracy(val_loader)
+
+            self.history["loss"].append(epoch_loss / len(train_loader))
+            self.history["acc"].append(train_acc)
+            self.history["val_acc"].append(val_acc)
             self._print_learning_progress(start_time, iteration, train_loader, val_loader)
-            self.history = {
-                "loss": [],      # training loss per epoch
-                "val_loss": [],  # validation loss per epoch
-                "acc": [],       # training accuracy per epoch
-                "val_acc": []    # validation accuracy per epoch
-            }
 
 

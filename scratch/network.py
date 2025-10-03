@@ -145,6 +145,16 @@ class Network():
         total_iters = self.epochs * len(x_train)   # total number of training steps
         t_global = 0                               # global step counter
 
+        # recording the histories
+
+        self.history = {
+            "loss" : [],
+            "val_loss": [],
+            "acc": [],
+            "val_acc": []
+
+        }
+
         for iteration in range(self.epochs):
             for x, y in zip(x_train, y_train):
 
@@ -160,5 +170,13 @@ class Network():
                 self._update_weights(weights_gradient, learning_rate=learning_rate)
 
                 t_global += 1  # increment global step
+        
+            train_acc = self.compute_accuracy(x_train, y_train)
+            val_acc   = self.compute_accuracy(x_val, y_val)
 
-            self._print_learning_progress(start_time, iteration, x_train, y_train, x_val, y_val)
+       
+        self.history["acc"].append(train_acc)
+        self.history["val_acc"].append(val_acc)
+    
+        self._print_learning_progress(start_time, iteration, x_train, y_train, x_val, y_val)
+        return self.history
